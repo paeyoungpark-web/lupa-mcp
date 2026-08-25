@@ -1,0 +1,45 @@
+{
+  "name": "lupa-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Lupa — search your Mac's files by name and document content (PDF, DOCX, XLSX, PPTX, HWP, scanned PDFs via OCR). Korean-aware, ~30ms, fully local.",
+  "type": "module",
+  "bin": {
+    "lupa-mcp": "src/index.js"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.4.3"
+  },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "lupa",
+    "file-search",
+    "local-search",
+    "macos",
+    "korean",
+    "hwp",
+    "pdf",
+    "ocr",
+    "파일검색",
+    "문서검색"
+  ],
+  "author": "Paeyoung Park <lupa.app.kr@gmail.com> (https://lupa.kr)",
+  "license": "MIT",
+  "homepage": "https://lupa.kr",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paeyoungpark-web/lupa-mcp"
+  },
+  "os": [
+    "darwin"
+  ]
+}
