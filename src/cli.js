@@ -56,10 +56,32 @@ const EXIT_MESSAGES = {
 /**
  * 설치된 Lupa가 `--content`(본문 읽기)를 지원하는가.
  *
- * 이 옵션은 앱 1.1부터 들어간다. 그 전 버전에 넘기면 "알 수 없는 플래그"로 종료 코드
+ * 이 옵션은 앱 2.0부터 들어간다. 그 전 버전에 넘기면 "알 수 없는 플래그"로 종료 코드
  * 64가 나오는데, 그대로 노출하면 "인자가 잘못됐습니다"라는 엉뚱한 말이 된다.
  * 한 번만 확인하고 캐시한다.
  */
+/**
+ * lupa-search는 App Store 샌드박스로 서명돼 있다. 이미 샌드박스(`sandbox-exec`) 안에 있는
+ * 프로세스가 띄우면 macOS가 기동 단계에서 SIGTRAP으로 죽인다(종료 코드 133).
+ * Aside·Codex 같은 에이전트의 **셸 도구**가 그렇다. 에이전트의 MCP 서버 설정으로 띄우면
+ * 샌드박스 밖이라 정상 동작한다(2026-09-17 Aside 1.0.914 확인).
+ */
+export class SandboxedLaunchError extends Error {
+  constructor() {
+    super(
+      "lupa-search가 샌드박스 안에서 실행돼 macOS가 기동을 막았습니다(종료 코드 133). " +
+        "에이전트의 셸 명령으로 띄우지 말고, 에이전트의 MCP 서버 설정에 Lupa를 등록하세요 " +
+        "(Aside: 설정 ▸ Plugins & MCPs, Command: npx -y github:paeyoungpark-web/lupa-mcp). " +
+        "Lupa 2.0.1부터는 앱의 설정 ▸ 일반 ▸ 'Aside에 연결…'로도 등록할 수 있습니다."
+    );
+    this.name = "SandboxedLaunchError";
+  }
+}
+
+function isSandboxKill(error) {
+  return error?.signal === "SIGTRAP" || error?.code === 133;
+}
+
 let contentSupport;
 export function supportsContent() {
   if (contentSupport) return contentSupport;
@@ -70,6 +92,8 @@ export function supportsContent() {
       const { stdout } = await execFileAsync(bin, ["--help"], { timeout: 10_000 });
       return stdout.includes("--content");
     } catch (error) {
+      // 샌드박스에 막힌 걸 "--content 미지원"으로 오판하면 "앱을 업데이트하라"는 틀린 안내가 나간다
+      if (isSandboxKill(error)) throw new SandboxedLaunchError();
       // --help는 0이 아닌 코드로 끝날 수도 있다 — 출력만 보면 된다
       return (error.stdout || "").includes("--content");
     }
@@ -81,7 +105,7 @@ export class ContentUnsupportedError extends Error {
   constructor() {
     super(
       "설치된 Lupa가 본문 읽기를 지원하지 않습니다. Mac App Store에서 Lupa를 " +
-        "1.1 이상으로 업데이트하면 lupa_read를 쓸 수 있습니다. " +
+        "2.0 이상으로 업데이트하면 lupa_read를 쓸 수 있습니다. " +
         "그때까지는 lupa_search로 파일을 찾은 뒤 파일을 직접 읽으세요."
     );
     this.name = "ContentUnsupportedError";
@@ -106,6 +130,7 @@ export async function runLupa(args) {
     if (error.code === "ETIMEDOUT") {
       throw new Error("검색이 30초 안에 끝나지 않았습니다. 인덱싱이 진행 중일 수 있습니다.");
     }
+    if (isSandboxKill(error)) throw new SandboxedLaunchError();
     const known = EXIT_MESSAGES[error.code];
     if (known) throw new Error(known);
     const detail = (error.stderr || error.message || "").trim();

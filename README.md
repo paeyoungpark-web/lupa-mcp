@@ -72,7 +72,7 @@ That's it. No API key, no account, no configuration.
 ### `lupa_read`
 
 Returns the text Lupa already extracted from a file — cheaper than reading the original,
-and it works for formats your agent cannot parse. Requires **Lupa 1.1 or later**.
+and it works for formats your agent cannot parse. Requires **Lupa 2.0 or later**.
 
 | argument | default | meaning |
 |---|---|---|
@@ -119,7 +119,7 @@ uploaded, and there is no telemetry.
 |---|---|
 | "Lupa를 찾을 수 없습니다" / not found | Install Lupa from the Mac App Store |
 | "검색 인덱스가 없습니다" | Open Lupa, add folders, wait for indexing |
-| "본문 읽기를 지원하지 않습니다" | Update Lupa to 1.1 or later |
+| "본문 읽기를 지원하지 않습니다" | Update Lupa to 2.0 or later |
 | No results for a file you know exists | Its folder may not be registered in Lupa |
 
 ## License
