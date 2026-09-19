@@ -71,7 +71,7 @@ export class SandboxedLaunchError extends Error {
     super(
       "lupa-search가 샌드박스 안에서 실행돼 macOS가 기동을 막았습니다(종료 코드 133). " +
         "에이전트의 셸 명령으로 띄우지 말고, 에이전트의 MCP 서버 설정에 Lupa를 등록하세요 " +
-        "(Aside: 설정 ▸ Plugins & MCPs, Command: npx -y github:paeyoungpark-web/lupa-mcp). " +
+        "(Aside: 설정 ▸ Plugins & MCPs / Codex: codex mcp add lupa -- npx -y github:paeyoungpark-web/lupa-mcp). " +
         "Lupa 2.0.1부터는 앱의 설정 ▸ 일반 ▸ 'Aside에 연결…'로도 등록할 수 있습니다."
     );
     this.name = "SandboxedLaunchError";
@@ -79,25 +79,50 @@ export class SandboxedLaunchError extends Error {
 }
 
 function isSandboxKill(error) {
-  return error?.signal === "SIGTRAP" || error?.code === 133;
+  // Aside는 SIGTRAP(133), Codex 샌드박스는 SIGABRT(134)로 죽는다(2026-09-20 실측).
+  return (
+    error?.signal === "SIGTRAP" ||
+    error?.signal === "SIGABRT" ||
+    error?.code === 133 ||
+    error?.code === 134
+  );
+}
+
+/**
+ * 설치된 Lupa가 `--folders`(폴더명 검색)를 지원하는가. 2.0.1부터 있다.
+ * 없는 버전에 넘기면 "알 수 없는 옵션"으로 종료 코드 64가 나므로 미리 확인한다.
+ */
+let folderSupport;
+export function supportsFolders() {
+  if (folderSupport) return folderSupport;
+  folderSupport = helpText().then((text) => text.includes("--folders"));
+  return folderSupport;
+}
+
+/** `--help` 출력. 두 기능 확인이 같은 호출을 쓰도록 한 번만 실행한다. */
+let helpCache;
+function helpText() {
+  if (helpCache) return helpCache;
+  helpCache = (async () => {
+    const bin = findLupaSearch();
+    if (!bin) throw new LupaNotInstalledError();
+    try {
+      const { stdout } = await execFileAsync(bin, ["--help"], { timeout: 10_000 });
+      return stdout;
+    } catch (error) {
+      // 샌드박스에 막힌 걸 "기능 미지원"으로 오판하면 "앱을 업데이트하라"는 틀린 안내가 나간다
+      if (isSandboxKill(error)) throw new SandboxedLaunchError();
+      // --help는 0이 아닌 코드로 끝날 수도 있다 — 출력만 보면 된다
+      return error.stdout || "";
+    }
+  })();
+  return helpCache;
 }
 
 let contentSupport;
 export function supportsContent() {
   if (contentSupport) return contentSupport;
-  contentSupport = (async () => {
-    const bin = findLupaSearch();
-    if (!bin) throw new LupaNotInstalledError();
-    try {
-      const { stdout } = await execFileAsync(bin, ["--help"], { timeout: 10_000 });
-      return stdout.includes("--content");
-    } catch (error) {
-      // 샌드박스에 막힌 걸 "--content 미지원"으로 오판하면 "앱을 업데이트하라"는 틀린 안내가 나간다
-      if (isSandboxKill(error)) throw new SandboxedLaunchError();
-      // --help는 0이 아닌 코드로 끝날 수도 있다 — 출력만 보면 된다
-      return (error.stdout || "").includes("--content");
-    }
-  })();
+  contentSupport = helpText().then((text) => text.includes("--content"));
   return contentSupport;
 }
 

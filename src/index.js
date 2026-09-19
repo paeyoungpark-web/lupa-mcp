@@ -2,7 +2,12 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { ContentUnsupportedError, runLupa, supportsContent } from "./cli.js";
+import {
+  ContentUnsupportedError,
+  runLupa,
+  supportsContent,
+  supportsFolders,
+} from "./cli.js";
 
 /**
  * 검색 문법 치트시트.
