@@ -41,5 +41,6 @@
   },
   "os": [
     "darwin"
-  ]
+  ],
+  "mcpName": "io.github.paeyoungpark-web/lupa-mcp"
 }

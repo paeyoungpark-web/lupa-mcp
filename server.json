@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.paeyoungpark-web/lupa-mcp",
+  "description": "Search this Mac's files by name and by what is written inside documents (PDF, Word, Excel, PowerPoint, Hangul HWP/HWPX, scanned PDFs via OCR). Reads Lupa's local index — no network, ~100ms, Korean-aware. Requires the free Lupa app from the Mac App Store.",
+  "repository": {
+    "url": "https://github.com/paeyoungpark-web/lupa-mcp",
+    "source": "github"
+  },
+  "version": "0.2.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "lupa-mcp",
+      "version": "0.2.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeHint": "npx"
+    }
+  ],
+  "websiteUrl": "https://lupa.kr/agents.html",
+  "title": "Lupa — local file search for your Mac"
+}
