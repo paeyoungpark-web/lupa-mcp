@@ -37,7 +37,7 @@
   "homepage": "https://lupa.kr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/paeyoungpark-web/lupa-mcp"
+    "url": "git+https://github.com/paeyoungpark-web/lupa-mcp.git"
   },
   "os": [
     "darwin"
