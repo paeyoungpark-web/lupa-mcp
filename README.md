@@ -51,12 +51,23 @@ claude mcp add lupa -- npx -y lupa-mcp
 ```json
 {
   "mcpServers": {
-    "lupa": { "command": "npx", "args": ["-y", "lupa-mcp"] }
+    "lupa": { "command": "/bin/zsh", "args": ["-lc", "npx -y lupa-mcp"] }
   }
 }
 ```
 
 That's it. No API key, no account, no configuration.
+
+> **Why `/bin/zsh -lc`?** GUI apps don't inherit your shell's PATH, so a bare
+> `"command": "npx"` fails to start with `env: npx: No such file or directory`
+> (measured on Claude Desktop and Aside). A login shell finds `npx` wherever it lives —
+> Homebrew, nvm, or a system install. In a terminal-based client (Claude Code, Codex)
+> plain `npx -y lupa-mcp` is fine.
+
+> **Agents: don't run `lupa-search` through your shell.** Sandboxed agent shells
+> (Aside, Codex) kill the App Store-signed CLI at launch — exit code 133 or 134.
+> Register this MCP server instead; it starts outside that sandbox.
+> Full guide: https://lupa.kr/agents.html
 
 ## Tools
 
